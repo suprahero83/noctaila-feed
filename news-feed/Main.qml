@@ -180,7 +180,7 @@ Item {
             root.togglePanelFromIpc();
         }
 
-        function search(query) {
+        function search(query: string) {
             var cleanQuery = Utils.cleanText(String(query || "")).substring(0, 160);
             var result = root.searchItems(cleanQuery, 50);
 

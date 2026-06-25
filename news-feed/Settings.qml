@@ -51,10 +51,27 @@ ColumnLayout {
     property var feedNameOptions: []
     property var sortModes: ["published-desc", "published-asc", "source"]
     property var sortModeLabels: ["Newest first", "Oldest first", "Source"]
+    property var sortModeOptions: [
+        { key: "published-desc", name: "Newest first" },
+        { key: "published-asc", name: "Oldest first" },
+        { key: "source", name: "Source" }
+    ]
     property var dedupeModes: ["link-title", "link", "guid", "title", "none"]
     property var dedupeModeLabels: ["Link or title", "Link", "GUID", "Title", "None"]
+    property var dedupeModeOptions: [
+        { key: "link-title", name: "Link or title" },
+        { key: "link", name: "Link" },
+        { key: "guid", name: "GUID" },
+        { key: "title", name: "Title" },
+        { key: "none", name: "None" }
+    ]
     property var ruleModes: ["include", "exclude", "highlight"]
     property var ruleModeLabels: ["Include", "Exclude", "Highlight"]
+    property var ruleModeOptions: [
+        { key: "include", name: "Include" },
+        { key: "exclude", name: "Exclude" },
+        { key: "highlight", name: "Highlight" }
+    ]
 
     Component.onCompleted: loadState()
     onPluginApiChanged: loadState()
@@ -148,18 +165,18 @@ ColumnLayout {
     function refreshOptions() {
         categoryOptions = ensureAllCategory(editCategories).map(function(category) {
             return {
-                id: category.id,
-                label: category.name || category.id
+                key: category.id,
+                name: category.name || category.id
             };
         });
-        feedOptions = [{ id: "", label: "Any feed" }].concat(editFeeds.map(function(feed) {
+        feedOptions = [{ key: "", name: "Any feed" }].concat(editFeeds.map(function(feed) {
             return {
-                id: feed.id,
-                label: feed.name || feed.url
+                key: feed.id,
+                name: feed.name || feed.url
             };
         }));
-        categoryNameOptions = categoryOptions.map(function(option) { return option.label; });
-        feedNameOptions = feedOptions.map(function(option) { return option.label; });
+        categoryNameOptions = categoryOptions;
+        feedNameOptions = feedOptions;
         newFeedCategoryIndex = Math.max(0, Math.min(newFeedCategoryIndex, categoryOptions.length - 1));
         newRuleFeedIndex = Math.max(0, Math.min(newRuleFeedIndex, feedOptions.length - 1));
         newRuleCategoryIndex = Math.max(0, Math.min(newRuleCategoryIndex, categoryOptions.length - 1));
@@ -175,10 +192,30 @@ ColumnLayout {
 
     function categoryIndexById(categoryId) {
         for (var i = 0; i < categoryOptions.length; i++) {
-            if (categoryOptions[i].id === categoryId) {
+            if (categoryOptions[i].key === categoryId) {
                 return i;
             }
         }
+        return 0;
+    }
+
+    function categoryKeyAt(index) {
+        var option = categoryOptions[index] || categoryOptions[0] || { key: "all" };
+        return option.key || "all";
+    }
+
+    function feedKeyAt(index) {
+        var option = feedOptions[index] || feedOptions[0] || { key: "" };
+        return option.key || "";
+    }
+
+    function indexByKey(options, key) {
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].key === key) {
+                return i;
+            }
+        }
+
         return 0;
     }
 
@@ -198,13 +235,13 @@ ColumnLayout {
             }
         }
 
-        var category = categoryOptions[newFeedCategoryIndex] || categoryOptions[0] || { id: "all" };
+        var category = categoryOptions[newFeedCategoryIndex] || categoryOptions[0] || { key: "all" };
         var next = editFeeds.slice();
         next.push({
             id: Utils.stableId([url, name]),
             name: name,
             url: url,
-            categoryId: category.id || "all",
+            categoryId: category.key || "all",
             enabled: true,
             pinned: newFeedPinned,
             priority: 0,
@@ -334,8 +371,8 @@ ColumnLayout {
             name: name,
             mode: ruleModes[newRuleModeIndex] || "highlight",
             terms: terms,
-            feedIds: feedScope.id ? [feedScope.id] : [],
-            categoryIds: categoryScope.id && categoryScope.id !== "all" ? [categoryScope.id] : [],
+            feedIds: feedScope.key ? [feedScope.key] : [],
+            categoryIds: categoryScope.key && categoryScope.key !== "all" ? [categoryScope.key] : [],
             enabled: true
         });
         editRules = next;
@@ -485,13 +522,9 @@ ColumnLayout {
             NLabel { label: "Sort"; description: "Article ordering in the panel and launcher." }
             NComboBox {
                 Layout.fillWidth: true
-                model: root.sortModeLabels
-                currentIndex: Math.max(0, root.sortModes.indexOf(root.editSortMode))
-                onCurrentIndexChanged: {
-                    if (currentIndex >= 0) {
-                        root.editSortMode = root.sortModes[currentIndex];
-                    }
-                }
+                model: root.sortModeOptions
+                currentKey: root.editSortMode
+                onSelected: key => root.editSortMode = key
             }
         }
 
@@ -502,13 +535,9 @@ ColumnLayout {
             NLabel { label: "Dedupe"; description: "How duplicate articles are collapsed." }
             NComboBox {
                 Layout.fillWidth: true
-                model: root.dedupeModeLabels
-                currentIndex: Math.max(0, root.dedupeModes.indexOf(root.editDedupeMode))
-                onCurrentIndexChanged: {
-                    if (currentIndex >= 0) {
-                        root.editDedupeMode = root.dedupeModes[currentIndex];
-                    }
-                }
+                model: root.dedupeModeOptions
+                currentKey: root.editDedupeMode
+                onSelected: key => root.editDedupeMode = key
             }
         }
     }
@@ -542,8 +571,8 @@ ColumnLayout {
         NComboBox {
             Layout.preferredWidth: 160
             model: root.categoryNameModel()
-            currentIndex: root.newFeedCategoryIndex
-            onCurrentIndexChanged: root.newFeedCategoryIndex = currentIndex
+            currentKey: root.categoryKeyAt(root.newFeedCategoryIndex)
+            onSelected: key => root.newFeedCategoryIndex = root.indexByKey(root.categoryOptions, key)
         }
 
         NButton {
@@ -616,13 +645,8 @@ ColumnLayout {
                     NComboBox {
                         Layout.preferredWidth: 150
                         model: root.categoryNameModel()
-                        currentIndex: root.categoryIndexById(modelData.categoryId)
-                        onCurrentIndexChanged: {
-                            var option = root.categoryOptions[currentIndex];
-                            if (option) {
-                                root.updateFeed(index, { categoryId: option.id });
-                            }
-                        }
+                        currentKey: modelData.categoryId || "all"
+                        onSelected: key => root.updateFeed(index, { categoryId: key || "all" })
                     }
 
                     NToggle {
@@ -751,9 +775,9 @@ ColumnLayout {
 
         NComboBox {
             Layout.preferredWidth: 120
-            model: root.ruleModeLabels
-            currentIndex: root.newRuleModeIndex
-            onCurrentIndexChanged: root.newRuleModeIndex = currentIndex
+            model: root.ruleModeOptions
+            currentKey: root.ruleModes[root.newRuleModeIndex] || "highlight"
+            onSelected: key => root.newRuleModeIndex = Math.max(0, root.ruleModes.indexOf(key))
         }
 
         NTextInput {
@@ -771,15 +795,15 @@ ColumnLayout {
         NComboBox {
             Layout.fillWidth: true
             model: root.feedNameModel()
-            currentIndex: root.newRuleFeedIndex
-            onCurrentIndexChanged: root.newRuleFeedIndex = currentIndex
+            currentKey: root.feedKeyAt(root.newRuleFeedIndex)
+            onSelected: key => root.newRuleFeedIndex = root.indexByKey(root.feedOptions, key)
         }
 
         NComboBox {
             Layout.fillWidth: true
             model: root.categoryNameModel()
-            currentIndex: root.newRuleCategoryIndex
-            onCurrentIndexChanged: root.newRuleCategoryIndex = currentIndex
+            currentKey: root.categoryKeyAt(root.newRuleCategoryIndex)
+            onSelected: key => root.newRuleCategoryIndex = root.indexByKey(root.categoryOptions, key)
         }
 
         NButton {
