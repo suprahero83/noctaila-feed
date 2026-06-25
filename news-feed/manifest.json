@@ -1,0 +1,45 @@
+{
+  "id": "news-feed",
+  "name": "News Feed",
+  "version": "1.0.0",
+  "minNoctaliaVersion": "3.9.0",
+  "author": "Corey",
+  "license": "MIT",
+  "repository": "https://github.com/corey/noctalia-news-feed",
+  "description": "Power-user RSS and Atom news aggregator",
+  "tags": ["Bar", "Panel", "Launcher", "Network", "Productivity"],
+  "entryPoints": {
+    "main": "Main.qml",
+    "barWidget": "BarWidget.qml",
+    "panel": "Panel.qml",
+    "settings": "Settings.qml",
+    "launcherProvider": "LauncherProvider.qml"
+  },
+  "dependencies": {
+    "plugins": []
+  },
+  "metadata": {
+    "commandPrefix": "news",
+    "defaultSettings": {
+      "feeds": [],
+      "categories": [
+        {
+          "id": "all",
+          "name": "All",
+          "color": "#A9AEFE"
+        }
+      ],
+      "rules": [],
+      "refreshIntervalSec": 900,
+      "maxItemsPerFeed": 25,
+      "maxStoredItems": 500,
+      "showOnlyUnread": false,
+      "markReadOnOpen": true,
+      "sortMode": "published-desc",
+      "dedupeMode": "link-title",
+      "readItemIds": [],
+      "pinnedItemIds": [],
+      "lastSelectedCategoryId": "all"
+    }
+  }
+}

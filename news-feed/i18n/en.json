@@ -1,0 +1,46 @@
+{
+  "bar": {
+    "tooltipStarting": "News Feed starting"
+  },
+  "panel": {
+    "title": "News Feed",
+    "starting": "Starting",
+    "searchPlaceholder": "Search title, summary, source, category",
+    "filterAll": "All",
+    "filterUnread": "Unread",
+    "filterPinned": "Pinned",
+    "filterHighlighted": "Highlighted",
+    "emptyStarting": "News Feed is starting",
+    "emptyNoFeeds": "No feeds configured",
+    "emptyRefreshing": "Refreshing feeds",
+    "emptySearch": "No articles match the search",
+    "emptyView": "No articles in this view"
+  },
+  "settings": {
+    "refreshStorage": "Refresh and Storage",
+    "refreshStorageDesc": "Set how often feeds refresh and how much cached state is kept.",
+    "refreshInterval": "Refresh interval",
+    "itemsPerFeed": "Items per feed",
+    "storedItems": "Stored items",
+    "showOnlyUnread": "Show only unread",
+    "markReadOnOpen": "Mark read on open",
+    "sort": "Sort",
+    "dedupe": "Dedupe",
+    "feeds": "Feeds",
+    "feedsDesc": "No feeds are bundled. Add RSS or Atom URLs here.",
+    "categories": "Categories",
+    "rules": "Rules",
+    "opml": "OPML"
+  },
+  "launcher": {
+    "name": "News Feed",
+    "commandDescription": "Search cached news articles",
+    "starting": "News Feed is starting",
+    "noFeeds": "No feeds configured",
+    "noArticles": "No cached articles",
+    "unread": "Unread"
+  },
+  "ipc": {
+    "target": "plugin:news-feed"
+  }
+}
